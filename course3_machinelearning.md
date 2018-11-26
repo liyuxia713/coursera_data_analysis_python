@@ -7,19 +7,24 @@
     - [模型评价](#模型评价)
         - [1. 分类模型评价](#1-分类模型评价)
         - [2. 回归模型评价](#2-回归模型评价)
+        - [交叉验证](#交叉验证)
+        - [试多个模型](#试多个模型)
     - [模型介绍](#模型介绍)
         - [1. 机器学习思想](#1-机器学习思想)
             - [`KNN`](#knn)
-        - [2. 线性模型](#2-线性模型)
+        - [2. 线性回归](#2-线性回归)
             - [`Least Squared Regeression` `（最小二乘估计）`](#least-squared-regeression-最小二乘估计)
+        - [3. 正则化的线性回归](#3-正则化的线性回归)
             - [`Ridge Regeression` `岭回归`](#ridge-regeression-岭回归)
             - [`Lasso Regeression`](#lasso-regeression)
+        - [4. 线性回归拟合非线性关系](#4-线性回归拟合非线性关系)
+        - [5. 线性回归到分类](#5-线性回归到分类)
             - [`Logistic Regeression`](#logistic-regeression)
             - [`Linear Support Vector Machine ` `线性支持向量机`](#linear-support-vector-machine--线性支持向量机)
-            - [线性模型小结](#线性模型小结)
-        - [3. 非线性模型](#3-非线性模型)
+            - [多分类](#多分类)
+        - [线性模型小结](#线性模型小结)
+        - [6. 非线性模型](#6-非线性模型)
             - [`Kernalized Support Vector Machine`](#kernalized-support-vector-machine)
-            - [`Redial Basis Function Kernel` `径向基核函数`](#redial-basis-function-kernel-径向基核函数)
             - [`Decision Tree` `决策树`](#decision-tree-决策树)
     - [特征工程](#特征工程)
 
@@ -36,6 +41,14 @@
 
 R平方， 也称作决定系数，在线性回归模型中等于相关系数的平方， 一般理解为$1-残差平方和/样本方差$。 
 介于[0,1], 越大越好。
+### 交叉验证
+- 5Fold
+- cross validation 
+- stratified cross validation (标准数据按比例分配, 避免样本部分有序的情况）
+- sklearn.model_selection validation curve 画出不同参数的效果图
+
+### 试多个模型
+[ A few useful things to know about machine learning][https://homes.cs.washington.edu/~pedrod/papers/cacm12.pdf]
 
 ## 模型介绍
 
@@ -49,7 +62,7 @@ R平方， 也称作决定系数，在线性回归模型中等于相关系数的
 - 不能很好的抽象关系
 - 不稳定（噪声影响大）
 
-### 2. 线性模型
+### 2. 线性回归
 
 #### `Least Squared Regeression` `（最小二乘估计）`
 
@@ -59,48 +72,75 @@ R平方， 也称作决定系数，在线性回归模型中等于相关系数的
 - 效果比KNN相对差
 - 稳定性比KNN好
 
-#### `Ridge Regeression` `岭回归`
- 
- <font color='red'>正则化</font>的最小二乘估计。
-  
-- 通过加正则项的方式，放弃无偏差性，损失精度，从而得到未知数据更友好的拟合，对病态数据效果好。
-- 病态矩阵：有特征线性相关性较强，也称作特征多重共线性Multicollinearity
-- 传统最小二乘估计的问题，当X中含相关性较强的特征时，$\theta$系数会很大，导致x微小的变动，预测值y变化很大，导致不稳定。
-- x相关性强则$\theta$大的理论解释：
+### 3. 正则化的线性回归
 
-> $$ min ||X\theta - y ||^2 $$
->
-> $$ \theta = (X^TX)^{(-1)}X^Ty $$
-> 当有特征相关性较强时，$|X^TX| 行列式接近0$ ，从而当x有微小变动时，$\theta$变化大，，导致模型不稳定。
+最小二乘估计中，如果某个特征的系数很大时，该特征微小的变化会导致结果偏差很大而效果不稳定。
+
+- 什么时候特征系数会很大？
+    - 当有特征线性相关时， $\theta$系数会很大. 
+    - 这种现象称作特征多重共线性，Multicolliearity, 特征矩阵称作病态举证
+    - x相关性强则$\theta$大的理论解释：
+
+```
+$$ min ||X\theta - y ||^2 $$
+
+$$ \theta = (X^TX)^{(-1)}X^Ty $$
+
+当有特征相关性较强时，$|X^TX|$ 行列式接近0 ，从而当x有微小变动时，$\theta$变化大，，导致模型不稳定。
+```
+
+解决思路： 在最优化函数后面加上x系数的和, 称作正则化项，从而避免系数过大。
+
+- 通过加正则项的方式，放弃无偏差性，损失精度，从而得到未知数据更友好的拟合，对病态数据效果好。
 
 - 正则化对样本少，特征多的情况 尤其有效
+- 根据加入的正则化项的形式，有两个常见正则化方法
+
+#### `Ridge Regeression` `岭回归`
+- 正则化项为L2
+- 会倾向于每个特征的系数都很小, 不会丢失特征，解释性差
+
 
 #### `Lasso Regeression`
+Least Absolute shrinkage and selection operator
 
-- 对特征选择有效
-- polynomial future transformation: 能捕捉特征之间的非线性关系？？？？
+- 正则化想为L1
+- 倾向不重要的特征系数为0， 达到特征选择的效果
+
+`为什么Lasso能做到特征选择，而Reige不能?`
+http://sofasofa.io/forum_main_post.php?postid=1001156
+
+### 4. 线性回归拟合非线性关系
+polynomial future transformation
+通过多项式特征的构造捕获特征之间的非线性关系
+因为高阶特征容易导致过拟合，所以多项式特征通常跟正则化的线性回归，如Reige组合使用。
+
+### 5. 线性回归到分类
+思想：普通线性回归后再加一层函数，将结果映射到[0,1]区间，进而变成0/1的二分类问题
+根据加的函数不同，有不同的模型。
 
 #### `Logistic Regeression`
-在普通线性回归的公式后加了一层sigmoid函数，使得y映射到[0,1]区间平滑地变成分类问题。
+加的是sigmoid函数，使得y映射到[0,1]区间, 平滑地变成分类问题。
+效果跟支持向量机模型差不多
 
-- 效果跟支持向量机差不多
+也有C参数控制正则化
 - 默认加入L2正则化项 （默认C=1） 
 - C为正则化项系数的倒数，C大，正则化项系数越低，在train data上努力效果好。 
 - C小，模型系数也会更低，甚至会损失traindata的准确率。
 
-
 #### `Linear Support Vector Machine ` `线性支持向量机`
-在普通线性回归的公式后加了一层sign函数，使得y映射到0/1上成为分类问题。
-
-在所有可能的分类结果中，decision margin最大线性模型，称作线性支持向量机 LSVM. 
-
-通过C控制正则化想的方式，调整decision margin对错判的容忍率
+加的是sign函数，使得y映射到0/1上成为分类问题。然后再从所有可能的分类结果中，选择decision margin最大的线性模型，称作线性支持向量机 LSVM. 
 
 - decision margin: decision boundary能达到的最大宽度
-- 效果性质（C)跟逻辑回归差不多
-- 线性支持向量机只用到了部分trainset, 用到的部分被称作支持向量 (support vector)
+- 有分类错的情形，decision margin怎么办？
+	- 通过C控制正则化项的方式，调整decision margin对错判的容忍率
+- 为什么叫支持向量机？
+	- 线性支持向量机只用到了部分trainset, 用到的部分被称作支持向量 (support vector)
 
-#### 线性模型小结
+#### 多分类
+将N分类问题变成N个1 v.s. N-1的二分类问题，然后从结果中选择得分最高的
+
+### 线性模型小结
 优点：
 
 - 简单、训练容易
@@ -111,16 +151,59 @@ R平方， 也称作决定系数，在线性回归模型中等于相关系数的
 缺点：
 
 - 低维特征，别的模型可能有更好的泛化效果 ？？？？
-- 对于分类问题，实际问题并不一定能线性分类。
+- 对于分类问题，实际关系可能很复杂，并不一定能线性分类。
 
-### 3. 非线性模型
+### 6. 非线性模型
 
 #### `Kernalized Support Vector Machine`
-将特征映射到高维，再用线性支持向量机
+将特征映射到高维，再高维上用线性支持向量机分类。
+$$ K(x, x^') = exp( -\gamma \dot ||x-x^'|| $$
 
-#### `Redial Basis Function Kernel` `径向基核函数`
+参数：
+
+- $\gamma$称作kernel width parameter, 其越小， decision margin越平滑，越大，margin 越尖，太大倾向过拟合。
+- 如果$\gamma$很大，C几乎没有作用。 如果$\gamma$很小，C作用同线性支持向量机。
+- 一般两个参数都是取是取中值附近，具体看你的应用场景，并测试。 $\gamma$测试在0.0001到10之间，C测试在0.1到100之间。 
+
+- Q: After training a Radial Basis Function (RBF) kernel SVM, you decide to increase the influence of each training point and to simplify the decision surface. Which of the following would be the best choice for the next RBF SVM you train?
+- A: Decrease Gamma and C
+    - simplify the decision surface  (decrease gamma)
+
+常见核函数有：
+
+- `Redial Basis Function Kernel` `径向基核函数` RBF 
+- `Polynomal Kernel` 
+
+小结：
+
+- 优点
+	- 在很多数据集上表现良好。
+	- 功能多样（各种核函数，甚至可以自定义）
+	- 低维或高维特征都适用 
+- 缺点
+	- 性能差，当样本超过5万时不太实用了。
+	- 特征需要标准化，且参数对效果的影响比较大。
+	- 解释性差。 
+	- 分类结果没有准确概率做参考。  （现在有方法可以间接的做 Platt Scaling）
 
 #### `Decision Tree` `决策树`
+通过一系列Yes or No的问题，抽象出规则，进行分类或回归。 回归问题时用叶子节点的俊辉。
+
+容易过拟合，采用pre pruning或post pruning, 调整的参数有下面三项，通常只用一个就可以解决过拟合，建议优先有max_depth.
+
+- max_depth
+- max_leafnodes
+- min_sample_leaf
+
+小结：
+
+- 优点：
+	- 解释性非常好
+	- 不用做特征预处理
+	- 能处理混合类型的特征，部分连续特征，部分离散特征
+- 缺点：
+	- 容易过拟合得到局部最优解 （即使加入参数）
+	- 可以通过决策树林的方式解决上个问题	 
 
 ## 特征工程
 
