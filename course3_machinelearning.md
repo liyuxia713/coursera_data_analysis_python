@@ -173,6 +173,7 @@ $$ K(x, x^') = exp( -\gamma \dot ||x-x^'|| $$
 
 - `Redial Basis Function Kernel` `径向基核函数` RBF 
 - `Polynomal Kernel` 
+- `linear`
 
 小结：
 
