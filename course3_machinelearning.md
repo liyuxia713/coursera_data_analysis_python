@@ -21,11 +21,17 @@
         - [5. 线性回归到分类](#5-线性回归到分类)
             - [`Logistic Regeression`](#logistic-regeression)
             - [`Linear Support Vector Machine ` `线性支持向量机`](#linear-support-vector-machine--线性支持向量机)
-            - [多分类](#多分类)
+            - [`Multi-Classification`  `多分类`](#multi-classification--多分类)
         - [线性模型小结](#线性模型小结)
         - [6. 非线性模型](#6-非线性模型)
             - [`Kernalized Support Vector Machine`](#kernalized-support-vector-machine)
             - [`Decision Tree` `决策树`](#decision-tree-决策树)
+        - [概率统计模型](#概率统计模型)
+            - [`Naive Bayes` `朴素贝叶斯`](#naive-bayes-朴素贝叶斯)
+            - [`Random Forest` `随机森林`](#random-forest-随机森林)
+            - [`Gradient Boosted Decision Tree`](#gradient-boosted-decision-tree)
+            - [`Neural Network` `神经网络`](#neural-network-神经网络)
+            - [`Deep Learning` `深度学习`](#deep-learning-深度学习)
     - [特征工程](#特征工程)
 
 <!-- /TOC -->
@@ -137,7 +143,7 @@ polynomial future transformation
 - 为什么叫支持向量机？
 	- 线性支持向量机只用到了部分trainset, 用到的部分被称作支持向量 (support vector)
 
-#### 多分类
+#### `Multi-Classification`  `多分类` 
 将N分类问题变成N个1 v.s. N-1的二分类问题，然后从结果中选择得分最高的
 
 ### 线性模型小结
@@ -205,6 +211,54 @@ $$ K(x, x^') = exp( -\gamma \dot ||x-x^'|| $$
 - 缺点：
 	- 容易过拟合得到局部最优解 （即使加入参数）
 	- 可以通过决策树林的方式解决上个问题	 
+
+### 概率统计模型
+#### `Naive Bayes` `朴素贝叶斯`
+是基于`贝叶斯定理`和`特征间条件独立`的`分类`算法.  Naive是指的特征间条件独立。
+sklearn中有三种朴素贝叶斯:
+
+- GaussianNB: 连续型特征上应用，如房价
+- 伯努利型，特征都是二元的
+- 多项式型，二元特征还要考虑权重
+
+特点：
+
+- 效率高
+- 没有参数
+- 不需要特征标准化
+- 损失准确率
+- 特征特别多，其他模型性能差的时候考虑使用（如文本分类中，每个word是一个特征)
+
+可以证明，朴素贝叶斯分类器在数学上与线性模型相关，因此线性模型的许多优点和缺点也适用于朴素贝叶斯。
+
+todo
+- 条件独立
+- 局部拟合
+
+#### `Random Forest` `随机森林`
+- 森林，指决策树的集合
+- 随机，指每棵树随机选择样本和特征； 尽量让每棵树用到的样本和特征不同，最大程度保证树的多样性，从而避免单棵树的过拟合问题； 抽样过程是完全独立的（即有放回的抽样）
+- 结果整合：分类问题，不同树的分类概率取均值，取均值最高的分类。 回归问题直接用均值。
+- 参数：
+	- n_estimators: 树的个数。（default=10)
+	- max_features: 每棵树用的最大特征个数。 默认值效果就很好。（分类default=sqrt(N), 回归default=log(N,2), N是整体特征个数)
+	- max_depth: 树的深度
+	- n_jobs: 用几个核去并行计算。 （-1用所有核）
+	- random_state: 随机种子，设为固定值
+- 优点：
+	- 在很多问题上效果较好 （如breast dataset上比前文的分类效果都好）
+	- 不用做特征标准化，参数也较少。
+	- 可以有不同类型的特征。
+	- 可以做并行化
+- 缺点：
+	- 结果不好解释
+	- 不适合特征特别多的场景（如文本分类） 
+
+#### `Gradient Boosted Decision Tree`
+#### `Neural Network` `神经网络`
+#### `Deep Learning` `深度学习`
+
+
 
 ## 特征工程
 
